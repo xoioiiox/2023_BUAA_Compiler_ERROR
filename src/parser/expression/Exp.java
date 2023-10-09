@@ -6,4 +6,8 @@ public class Exp {
     public Exp(AddExp addExp) {
         this.addExp = addExp;
     }
+
+    public int getDimension() {
+        return this.addExp.getDimension();
+    }
 }

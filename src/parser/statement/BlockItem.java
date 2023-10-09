@@ -15,4 +15,12 @@ public class BlockItem {
         this.stmt = stmt;
         this.decl = null;
     }
+
+    public Decl getDecl() {
+        return decl;
+    }
+
+    public Stmt getStmt() {
+        return stmt;
+    }
 }

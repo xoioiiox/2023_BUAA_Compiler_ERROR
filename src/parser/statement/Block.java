@@ -8,4 +8,8 @@ public class Block extends Stmt {
     public Block(ArrayList<BlockItem> blockItems) {
         this.blockItems = blockItems;
     }
+
+    public ArrayList<BlockItem> getBlockItems() {
+        return blockItems;
+    }
 }

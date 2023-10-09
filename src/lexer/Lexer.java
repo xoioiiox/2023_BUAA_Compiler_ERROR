@@ -1,6 +1,7 @@
 package lexer;
 
 import error.Error;
+import error.ErrorTable;
 import error.ErrorType;
 
 import java.io.*;
@@ -107,6 +108,7 @@ public class Lexer {
                         }
                         else {
                             Error error = new Error(lineNum, ErrorType.a);
+                            ErrorTable.addError(error);
                         }
                     }
                     else if (f == 2) {
@@ -116,6 +118,7 @@ public class Lexer {
                         }
                         else {
                             Error error = new Error(lineNum, ErrorType.a);
+                            ErrorTable.addError(error);
                         }
                     }
                     else {
@@ -130,6 +133,7 @@ public class Lexer {
                         }
                         else {
                             Error error = new Error(lineNum, ErrorType.a);
+                            ErrorTable.addError(error);
                         }
                     }
                     c = getAChar();

@@ -12,4 +12,8 @@ public class MulExp {
         this.signs = signs;
         this.unaryExps = unaryExps;
     }
+
+    public int getDimension() {
+        return unaryExps.get(0).getDimension();
+    }
 }

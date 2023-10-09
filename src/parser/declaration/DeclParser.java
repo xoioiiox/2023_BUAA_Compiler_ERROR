@@ -1,7 +1,7 @@
 package parser.declaration;
 
+import error.*;
 import error.Error;
-import error.ErrorType;
 import lexer.LexType;
 import lexer.LexerIterator;
 import lexer.Token;
@@ -13,8 +13,11 @@ import java.util.ArrayList;
 
 public class DeclParser {
     LexerIterator iterator;
-    public DeclParser (LexerIterator iterator) {
+    private SymbolTable curSymbolTable;
+
+    public DeclParser (LexerIterator iterator, SymbolTable curSymbolTable) {
         this.iterator = iterator;
+        this.curSymbolTable = curSymbolTable;
     }
 
     public Decl parseDecl () {
@@ -38,21 +41,30 @@ public class DeclParser {
             iterator.read(); // ,
             constDefs.add(parseConstDef());
         }
-        iterator.read(); // ;
+        //iterator.read(); // ;
+        checkErrorI();
         System.out.println("<ConstDecl>");
         return new ConstDecl(btype, constDefs);
     }
 
     public ConstDef parseConstDef() {
-        ExpParser expParser = new ExpParser(iterator);
+        ExpParser expParser = new ExpParser(iterator, curSymbolTable);
         Token Ident = iterator.read(); // ident
         ArrayList<ConstExp> constExps = new ArrayList<>();
+        int cnt = 0;
         while (iterator.preRead(1).getLexType() == LexType.LBRACK) {
+            cnt++;
             iterator.read(); // [
             expParser.parseConstExp();
             //iterator.read(); // ]
-            judgeErrorK();
+            checkErrorK();
         }
+        if (curSymbolTable.checkReName(Ident.getVal())) {
+            Error error = new Error(Ident.getLineNum(), ErrorType.b);
+            ErrorTable.addError(error);
+        }
+        SymbolCon symbolCon = new SymbolCon(Ident.getVal(), Ident.getLineNum(), cnt);
+        curSymbolTable.addSymbol(symbolCon);
         iterator.read(); // =
         ConstInitVal constInitVal = parseConstInitVal();
         System.out.println("<ConstDef>");
@@ -60,7 +72,7 @@ public class DeclParser {
     }
 
     public ConstInitVal parseConstInitVal() {
-        ExpParser expParser = new ExpParser(iterator);
+        ExpParser expParser = new ExpParser(iterator, curSymbolTable);
         ConstInitVal constInitVal;
         if (iterator.preRead(1).getLexType() == LexType.LBRACE) {
             iterator.read(); // {
@@ -96,22 +108,31 @@ public class DeclParser {
             iterator.read(); // ,
             varDefs.add(parseVarDef());
         }
-        iterator.read(); // ;
+        //iterator.read(); // ;
+        checkErrorI();
         System.out.println("<VarDecl>");
         return new VarDecl(btype, varDefs);
     }
 
     public VarDef parseVarDef() {
-        ExpParser expParser = new ExpParser(iterator);
+        ExpParser expParser = new ExpParser(iterator, curSymbolTable);
         ArrayList<ConstExp> constExps = new ArrayList<>();
         InitVal initVal = null;
         Token Ident = iterator.read(); // ident
+        int cnt = 0;
         while (iterator.preRead(1).getLexType() == LexType.LBRACK) {
+            cnt++;
             iterator.read(); // [
             constExps.add(expParser.parseConstExp());
             //iterator.read(); // ]
-            judgeErrorK();
+            checkErrorK();
         }
+        if (curSymbolTable.checkReName(Ident.getVal())) {
+            Error error = new Error(Ident.getLineNum(), ErrorType.b);
+            ErrorTable.addError(error);
+        }
+        SymbolVar symbolVar = new SymbolVar(Ident.getVal(), Ident.getLineNum(), cnt);
+        curSymbolTable.addSymbol(symbolVar);
         if (iterator.preRead(1).getLexType() == LexType.ASSIGN) {
             iterator.read(); // =
             initVal = parseInitVal();
@@ -121,7 +142,7 @@ public class DeclParser {
     }
 
     public InitVal parseInitVal() {
-        ExpParser expParser = new ExpParser(iterator);
+        ExpParser expParser = new ExpParser(iterator, curSymbolTable);
         InitVal initVal;
         if (iterator.preRead(1).getLexType() == LexType.LBRACE) {
             iterator.read(); // {
@@ -148,12 +169,23 @@ public class DeclParser {
         return initVal;
     }
 
-    public void judgeErrorK() {
+    public void checkErrorI() {
+        if (iterator.preRead(1).getLexType() == LexType.SEMICN) {
+            iterator.read(); // ;
+        }
+        else {
+            Error error = new Error(iterator.readLast().getLineNum(), ErrorType.i);
+            ErrorTable.addError(error);
+        }
+    }
+
+    public void checkErrorK() {
         if (iterator.preRead(1).getLexType() == LexType.RBRACK) {
             iterator.read();
         }
         else {
-            Error error = new Error(iterator.getCurLineNum(), ErrorType.k);
+            Error error = new Error(iterator.readLast().getLineNum(), ErrorType.k);
+            ErrorTable.addError(error);
         }
     }
 

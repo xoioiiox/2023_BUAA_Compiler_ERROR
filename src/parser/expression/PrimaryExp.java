@@ -16,4 +16,16 @@ public class PrimaryExp {
     public PrimaryExp(Number number) {
         this.number = number;
     }
+
+    public int getDimension() {
+        if (exp != null) {
+            return exp.getDimension();
+        }
+        else if (lVal != null) {
+            return lVal.getDimension();
+        }
+        else {
+            return 0; //int
+        }
+    }
 }

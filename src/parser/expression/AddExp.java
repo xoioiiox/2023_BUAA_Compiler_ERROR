@@ -12,4 +12,8 @@ public class AddExp {
         this.signs = signs;
         this.mulExps = mulExps;
     }
+
+    public int getDimension() {
+        return mulExps.get(0).getDimension();
+    }
 }

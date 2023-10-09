@@ -1,5 +1,6 @@
 package parser.expression;
 
+import error.SymbolTable;
 import lexer.LexType;
 import lexer.LexerIterator;
 import lexer.Token;
@@ -7,10 +8,12 @@ import lexer.Token;
 import java.util.ArrayList;
 
 public class CondParser {
-    LexerIterator iterator;
+    private LexerIterator iterator;
+    private SymbolTable curSymbolTable;
 
-    public CondParser(LexerIterator iterator) {
+    public CondParser(LexerIterator iterator, SymbolTable curSymbolTable) {
         this.iterator = iterator;
+        this.curSymbolTable = curSymbolTable;
     }
 
     public Cond parseCond() {
@@ -60,7 +63,7 @@ public class CondParser {
     public RelExp parseRelExp() {
         ArrayList<AddExp> addExps = new ArrayList<>();
         ArrayList<Token> signs = new ArrayList<>();
-        ExpParser expParser = new ExpParser(iterator);
+        ExpParser expParser = new ExpParser(iterator, curSymbolTable);
         addExps.add(expParser.parseAddExp());
         while (iterator.preRead(1).getLexType() == LexType.LSS
                 || iterator.preRead(1).getLexType() == LexType.LEQ

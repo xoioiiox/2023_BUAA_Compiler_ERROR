@@ -39,6 +39,13 @@ public class LexerIterator {
         }
     }
 
+    public Token readLast() {
+        if (pos > 0) {
+            return tokens.get(pos - 1);
+        }
+        return null;
+    }
+
     public Token preRead(int cnt) {
         int prePos = pos + cnt - 1;
         if (prePos < tokens.size()) {
@@ -51,9 +58,5 @@ public class LexerIterator {
 
     public boolean hasNext() {
         return pos < tokens.size();
-    }
-
-    public int getCurLineNum() {
-        return tokens.get(pos - 1).getLineNum(); //todo pos?
     }
 }
