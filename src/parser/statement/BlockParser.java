@@ -1,6 +1,8 @@
 package parser.statement;
 
 import error.SymbolTable;
+import io.Output;
+import io.ParserOutput;
 import lexer.LexType;
 import lexer.LexerIterator;
 import parser.declaration.DeclParser;
@@ -22,14 +24,16 @@ public class BlockParser {
         ArrayList<BlockItem> blockItems = new ArrayList<>();
         iterator.read(); // {
         while (iterator.preRead(1).getLexType() != LexType.RBRACE) {
-            blockItems.add(parseBlockItem());
+            blockItems.add(parseBlockItem(false));
         }
         iterator.read(); // }
-        System.out.println("<Block>");
+        Output output = new Output("<Block>");
+        ParserOutput.addOutput(output);
+        //System.out.println("<Block>");
         return new Block(blockItems);
     }
 
-    public BlockItem parseBlockItem() {
+    public BlockItem parseBlockItem(boolean checkVoidReturn) {
         BlockItem blockItem;
         if (iterator.preRead(1).getLexType() == LexType.CONSTTK
                 || iterator.preRead(1).getLexType() == LexType.INTTK) {
@@ -37,7 +41,7 @@ public class BlockParser {
             blockItem = new BlockItem(declParser.parseDecl());
         }
         else {
-            StmtParser stmtParser = new StmtParser(iterator, curSymbolTable);
+            StmtParser stmtParser = new StmtParser(iterator, curSymbolTable, checkVoidReturn);
             blockItem = new BlockItem(stmtParser.parseStmt());
         }
         return blockItem;

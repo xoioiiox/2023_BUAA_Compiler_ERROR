@@ -12,4 +12,8 @@ public class Symbol {
     public String getName() {
         return name;
     }
+
+    public int getLineNum() {
+        return lineNum;
+    }
 }

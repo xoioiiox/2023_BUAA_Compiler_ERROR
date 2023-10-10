@@ -1,5 +1,8 @@
 package lexer;
 
+import io.Output;
+import io.ParserOutput;
+
 import java.util.ArrayList;
 
 public class LexerIterator {
@@ -29,7 +32,9 @@ public class LexerIterator {
         if (pos < tokens.size()) {
             Token token = tokens.get(pos);
             if (printOrNot) {
-                System.out.println(token.getLexType() + " " + token.getVal()); //print?
+                Output output = new Output(token.getLexType() + " " + token.getVal());
+                ParserOutput.addOutput(output);
+                //System.out.println(token.getLexType() + " " + token.getVal()); //print?
             }
             pos++;
             return token;

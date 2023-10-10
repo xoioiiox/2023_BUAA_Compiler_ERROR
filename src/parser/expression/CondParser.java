@@ -1,6 +1,8 @@
 package parser.expression;
 
 import error.SymbolTable;
+import io.Output;
+import io.ParserOutput;
 import lexer.LexType;
 import lexer.LexerIterator;
 import lexer.Token;
@@ -18,7 +20,9 @@ public class CondParser {
 
     public Cond parseCond() {
         LOrExp lOrExp = parseLOrExp();
-        System.out.println("<Cond>");
+        Output output = new Output("<Cond>");
+        ParserOutput.addOutput(output);
+        //System.out.println("<Cond>");
         return new Cond(lOrExp);
     }
 
@@ -26,11 +30,15 @@ public class CondParser {
         ArrayList<LAndExp> lAndExps = new ArrayList<>();
         lAndExps.add(parseLAndExp());
         while (iterator.preRead(1).getLexType() == LexType.OR) {
-            System.out.println("<LOrExp>");
+            Output output = new Output("<LOrExp>");
+            ParserOutput.addOutput(output);
+            //System.out.println("<LOrExp>");
             iterator.read(); // ||
             lAndExps.add(parseLAndExp());
         }
-        System.out.println("<LOrExp>");
+        Output output = new Output("<LOrExp>");
+        ParserOutput.addOutput(output);
+        //System.out.println("<LOrExp>");
         return new LOrExp(lAndExps);
     }
 
@@ -38,11 +46,15 @@ public class CondParser {
         ArrayList<EqExp> EqExps = new ArrayList<>();
         EqExps.add(parseEqExp());
         while (iterator.preRead(1).getLexType() == LexType.AND) {
-            System.out.println("<LAndExp>");
+            Output output = new Output("<LAndExp>");
+            ParserOutput.addOutput(output);
+            //System.out.println("<LAndExp>");
             iterator.read(); // &&
             EqExps.add(parseEqExp());
         }
-        System.out.println("<LAndExp>");
+        Output output = new Output("<LAndExp>");
+        ParserOutput.addOutput(output);
+        //System.out.println("<LAndExp>");
         return new LAndExp(EqExps);
     }
 
@@ -52,11 +64,15 @@ public class CondParser {
         relExps.add(parseRelExp());
         while (iterator.preRead(1).getLexType() == LexType.EQL
                 || iterator.preRead(1).getLexType() == LexType.NEQ) {
-            System.out.println("<EqExp>");
+            Output output = new Output("<EqExp>");
+            ParserOutput.addOutput(output);
+            //System.out.println("<EqExp>");
             signs.add(iterator.read()); // == | !=
             relExps.add(parseRelExp());
         }
-        System.out.println("<EqExp>");
+        Output output = new Output("<EqExp>");
+        ParserOutput.addOutput(output);
+        //System.out.println("<EqExp>");
         return new EqExp(relExps, signs);
     }
 
@@ -69,11 +85,15 @@ public class CondParser {
                 || iterator.preRead(1).getLexType() == LexType.LEQ
                 || iterator.preRead(1).getLexType() == LexType.GRE
                 || iterator.preRead(1).getLexType() == LexType.GEQ) {
-            System.out.println("<RelExp>");
+            Output output = new Output("<RelExp>");
+            ParserOutput.addOutput(output);
+            //System.out.println("<RelExp>");
             signs.add(iterator.read());
             addExps.add(expParser.parseAddExp());
         }
-        System.out.println("<RelExp>");
+        Output output = new Output("<RelExp>");
+        ParserOutput.addOutput(output);
+        //System.out.println("<RelExp>");
         return new RelExp(addExps, signs);
     }
 

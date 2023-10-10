@@ -24,18 +24,17 @@ public class LVal {
     }
 
     public int getDimension() {
-        if (curSymbolTable.getSymbol(Ident.getVal()) == null) {
+        Symbol symbol = curSymbolTable.getSymbol(Ident.getVal());
+        if (!(symbol instanceof SymbolVar) && !(symbol instanceof SymbolCon) ) {
             return -2; //未定义
         }
-        int dim1 = 0, dim2; //dim1为原定义维度
-        Symbol symbol = curSymbolTable.getSymbol(Ident.getVal());
+        int dim1, dim2; //dim1为原定义维度
         if (symbol instanceof SymbolVar) {
             dim1 = ((SymbolVar) symbol).getDimension();
         }
-        else if (symbol instanceof SymbolCon) {
+        else {
             dim1 = ((SymbolCon) symbol).getDimension();
         }
-        /*不可能存在LVal为Func*/
         dim2 = exps.size();
         return dim1 - dim2;
     }

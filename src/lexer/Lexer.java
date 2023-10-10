@@ -101,7 +101,7 @@ public class Lexer {
                 content.append(c);
                 c = getAChar();
                 while (c != '"' && c != 0) { //按理不会读到0
-                    if (f == 1) {
+                    if (f == 1) { // \n
                         f = 0;
                         if (c == 'n') {
                             content.append(c); //TODO
@@ -111,7 +111,7 @@ public class Lexer {
                             ErrorTable.addError(error);
                         }
                     }
-                    else if (f == 2) {
+                    else if (f == 2) { // %d
                         f = 0;
                         if (c == 'd') {
                             content.append(c);
@@ -137,8 +137,20 @@ public class Lexer {
                         }
                     }
                     c = getAChar();
+                    if (c == '"') {
+                        char c1 = getAChar();
+                        if (c1 != ',' && c1 != ')' && c1 != ';') {
+                            Error error = new Error(lineNum, ErrorType.a);
+                            ErrorTable.addError(error);
+                            c = c1;
+                        }
+                        else {
+                            retract();
+                        }
+                    }
                 }
                 content.append(c);
+                //System.out.println(content);
                 content1 = new String(content);
                 token = new Token(LexType.STRCON, content1, lineNum);
                 break;

@@ -1,7 +1,7 @@
 package parser.expression;
 
-import error.SymbolFunc;
-import error.SymbolTable;
+import error.*;
+import error.Error;
 import lexer.Token;
 
 public class UnaryExp {
@@ -37,8 +37,13 @@ public class UnaryExp {
             return unaryExp.getDimension();
         }
         else {
-            SymbolFunc symbolFunc = (SymbolFunc) curSymbolTable.getSymbol(Ident.getVal()); //TODO 若之前定义函数时重名怎么办？
-            return symbolFunc.getReType();
+            Symbol symbol = curSymbolTable.getSymbol(Ident.getVal()); //TODO 若之前定义函数时重名怎么办？
+            if (symbol instanceof SymbolFunc) {
+                return ((SymbolFunc) symbol).getReType();
+            }
+            else {
+                return -2;
+            }
         }
     }
 }

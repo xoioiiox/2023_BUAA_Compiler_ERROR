@@ -2,6 +2,8 @@ package parser.statement;
 
 import error.*;
 import error.Error;
+import io.Output;
+import io.ParserOutput;
 import lexer.LexType;
 import lexer.LexerIterator;
 import lexer.Token;
@@ -13,11 +15,13 @@ public class StmtParser {
     private LexerIterator iterator;
     private SymbolTable curSymbolTable;
     private int inFor;
+    private boolean checkVoidReturn;
 
-    public StmtParser(LexerIterator iterator, SymbolTable curSymbolTable) {
+    public StmtParser(LexerIterator iterator, SymbolTable curSymbolTable, boolean checkVoidReturn) {
         this.iterator = iterator;
         this.curSymbolTable = curSymbolTable;
         this.inFor = 0;
+        this.checkVoidReturn = checkVoidReturn;
     }
 
 
@@ -68,6 +72,7 @@ public class StmtParser {
                     //iterator.read(); // )
                     checkErrorJ();
                     //iterator.read(); // ;
+                    checkErrorI();
                     stmt = new StmtGetInt(lVal);
                 }
                 else {
@@ -77,6 +82,7 @@ public class StmtParser {
                     iterator.read(); // =
                     Exp exp = expParser.parseExp();
                     //iterator.read(); // ;
+                    checkErrorI();
                     stmt = new StmtAssign(lVal, exp);
                 }
             }
@@ -84,18 +90,20 @@ public class StmtParser {
                 iterator.setPos(prePos);
                 Exp exp = expParser.parseExp();
                 //iterator.read(); // ;
+                checkErrorI();
                 stmt = new StmtExp(exp);
             }
-            checkErrorI();
         }
         else {
             ExpParser expParser = new ExpParser(iterator, curSymbolTable);
             Exp exp = expParser.parseExp();
             //iterator.read(); // ;
-            stmt = new StmtExp(exp);
             checkErrorI();
+            stmt = new StmtExp(exp);
         }
-        System.out.println("<Stmt>");
+        Output output = new Output("<Stmt>");
+        ParserOutput.addOutput(output);
+        //System.out.println("<Stmt>");
         return stmt;
     }
 
@@ -130,7 +138,7 @@ public class StmtParser {
         if (iterator.preRead(1).getLexType() != LexType.SEMICN) {
             forStmt1 = parseForStmt();
         }
-        iterator.read(); // ; todo
+        iterator.read(); // ;
         if (iterator.preRead(1).getLexType() != LexType.SEMICN) {
             cond = condParser.parseCond(); //parseCond
         }
@@ -150,13 +158,15 @@ public class StmtParser {
         LVal lVal = expParser.parseLVal();
         iterator.read(); // =
         Exp exp = expParser.parseExp();
+        Output output = new Output("<ForStmt>");
+        ParserOutput.addOutput(output);
         //System.out.println("<ForStmt>");
         return new ForStmt(lVal, exp);
     }
 
     public StmtBreak parseStmtBreak() {
         Token token = iterator.read(); // break
-        if (inFor != 0) {
+        if (inFor == 0) {
             Error error = new Error(token.getLineNum(), ErrorType.m);
             ErrorTable.addError(error);
         }
@@ -167,7 +177,7 @@ public class StmtParser {
 
     public StmtContinue parseStmtContinue() {
         Token token = iterator.read(); // continue
-        if (inFor != 0) {
+        if (inFor == 0) {
             Error error = new Error(token.getLineNum(), ErrorType.m);
             ErrorTable.addError(error);
         }
@@ -180,8 +190,12 @@ public class StmtParser {
         ExpParser expParser = new ExpParser(iterator, curSymbolTable);
         Token token = iterator.read(); // return
         Exp exp = null;
-        if (iterator.preRead(1).getLexType() != LexType.SEMICN) {
+        if (isNextExp()) { //notice 单独return
             exp = expParser.parseExp(); //parseExp
+        }
+        if (checkVoidReturn && exp != null) { // TODO
+            Error error = new Error(token.getLineNum(), ErrorType.f);
+            ErrorTable.addError(error);
         }
         //iterator.read(); // ;
         checkErrorI();
@@ -252,6 +266,15 @@ public class StmtParser {
             Error error = new Error(iterator.readLast().getLineNum(), ErrorType.j);
             ErrorTable.addError(error);
         }
+    }
+
+    public boolean isNextExp() {
+        LexType lexType = iterator.preRead(1).getLexType();
+        if (lexType == LexType.PLUS || lexType == LexType.MINU || lexType == LexType.NOT
+                || lexType == LexType.LPARENT || lexType == LexType.IDENFR || lexType == LexType.INTCON) {
+            return true;
+        }
+        return false;
     }
 
 }

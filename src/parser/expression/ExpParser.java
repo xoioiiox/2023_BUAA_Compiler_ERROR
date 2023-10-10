@@ -2,6 +2,8 @@ package parser.expression;
 
 import error.*;
 import error.Error;
+import io.Output;
+import io.ParserOutput;
 import lexer.LexType;
 import lexer.LexerIterator;
 import lexer.Token;
@@ -26,7 +28,9 @@ public class ExpParser {
     public Exp parseExp() {
         Exp exp = new Exp(parseAddExp());
         if (printOrNot) {
-            System.out.println("<Exp>");
+            Output output = new Output("<Exp>");
+            ParserOutput.addOutput(output);
+            //System.out.println("<Exp>");
         }
         return exp;
     }
@@ -38,13 +42,17 @@ public class ExpParser {
         while (iterator.preRead(1).getLexType() == LexType.PLUS
                 || iterator.preRead(1).getLexType() == LexType.MINU) {
             if (printOrNot) {
-                System.out.println("<AddExp>");
+                Output output = new Output("<AddExp>");
+                ParserOutput.addOutput(output);
+                //System.out.println("<AddExp>");
             }
             signs.add(iterator.read());
             mulExps.add(parseMulExp());
         }
         if (printOrNot) {
-            System.out.println("<AddExp>");
+            Output output = new Output("<AddExp>");
+            ParserOutput.addOutput(output);
+            //System.out.println("<AddExp>");
         }
         return new AddExp(signs, mulExps);
     }
@@ -57,13 +65,17 @@ public class ExpParser {
                 || iterator.preRead(1).getLexType() == LexType.DIV
                 || iterator.preRead(1).getLexType() == LexType.MOD) {
             if (printOrNot) {
-                System.out.println("<MulExp>");
+                Output output = new Output("<MulExp>");
+                ParserOutput.addOutput(output);
+                //System.out.println("<MulExp>");
             }
             signs.add(iterator.read());
             unaryExps.add(parseUnaryExp());
         }
         if (printOrNot) {
-            System.out.println("<MulExp>");
+            Output output = new Output("<MulExp>");
+            ParserOutput.addOutput(output);
+            //System.out.println("<MulExp>");
         }
         return new MulExp(signs, unaryExps);
     }
@@ -75,15 +87,20 @@ public class ExpParser {
             FuncRParams funcRParams = null;
             Token Ident = iterator.read(); //Ident
             /*---C：未定义---*/
-            checkErrorC(Ident);
+            boolean isErrorC = checkErrorC1(Ident);
             iterator.read(); // (
-            if (iterator.preRead(1).getLexType() != LexType.RPARENT) {
+            if (isNextExp()) {
                 funcRParams = parseFuncRParams();
             }
             /*---D：参数数目不匹配---*/
-            checkErrorD(Ident, funcRParams);
+            boolean isErrorD = false;
+            if (!isErrorC) {
+                isErrorD = checkErrorD(Ident, funcRParams);
+            }
             /*---E：参数类型不匹配---*/
-            checkErrorE(Ident, funcRParams);
+            if (!isErrorC && !isErrorD) {
+                checkErrorE(Ident, funcRParams);
+            }
             //iterator.read(); // )
             checkErrorJ();
             unaryExp = new UnaryExp(Ident, funcRParams, curSymbolTable);
@@ -94,7 +111,9 @@ public class ExpParser {
             Token op = iterator.read();
             UnaryOp unaryOp = new UnaryOp(op);
             if (printOrNot) {
-                System.out.println("<UnaryOp>");
+                Output output = new Output("<UnaryOp>");
+                ParserOutput.addOutput(output);
+                //System.out.println("<UnaryOp>");
             }
             unaryExp = new UnaryExp(unaryOp, parseUnaryExp(), curSymbolTable);
         }
@@ -103,7 +122,9 @@ public class ExpParser {
             unaryExp = new UnaryExp(primaryExp, curSymbolTable);
         }
         if (printOrNot) {
-            System.out.println("<UnaryExp>");
+            Output output = new Output("<UnaryExp>");
+            ParserOutput.addOutput(output);
+            //System.out.println("<UnaryExp>");
         }
         return unaryExp;
     }
@@ -116,7 +137,9 @@ public class ExpParser {
             exps.add(parseExp());
         }
         if (printOrNot) {
-            System.out.println("<FuncRParams>");
+            Output output = new Output("<FuncRParams>");
+            ParserOutput.addOutput(output);
+            //System.out.println("<FuncRParams>");
         }
         return new FuncRParams(exps);
     }
@@ -138,12 +161,16 @@ public class ExpParser {
             Token intConst = iterator.read();
             Number number = new Number(intConst);
             if (printOrNot) {
-                System.out.println("<Number>");
+                Output output = new Output("<Number>");
+                ParserOutput.addOutput(output);
+                //System.out.println("<Number>");
             }
             primaryExp = new PrimaryExp(number);
         }
         if (printOrNot) {
-            System.out.println("<PrimaryExp>");
+            Output output = new Output("<PrimaryExp>");
+            ParserOutput.addOutput(output);
+            //System.out.println("<PrimaryExp>");
         }
         return primaryExp;
     }
@@ -152,7 +179,7 @@ public class ExpParser {
         ArrayList<Exp> exps = new ArrayList<>();
         Token Ident = iterator.read(); // Ident
         /*---Error C---*/
-        checkErrorC(Ident);
+        checkErrorC2(Ident);
         while (iterator.preRead(1).getLexType() == LexType.LBRACK) {
             iterator.read(); // [
             exps.add(parseExp());
@@ -160,25 +187,40 @@ public class ExpParser {
             checkErrorK();
         }
         if (printOrNot) {
-            System.out.println("<LVal>");
+            Output output = new Output("<LVal>");
+            ParserOutput.addOutput(output);
+            //System.out.println("<LVal>");
         }
         return new LVal(Ident, exps, curSymbolTable);
     }
 
     public ConstExp parseConstExp() {
         AddExp addExp = parseAddExp();
-        System.out.println("<ConstExp>");
+        Output output = new Output("<ConstExp>");
+        ParserOutput.addOutput(output);
+        //System.out.println("<ConstExp>");
         return new ConstExp(addExp);
     }
 
-    public void checkErrorC(Token Ident) {
-        if (curSymbolTable.getSymbol(Ident.getVal()) == null) {
+    public boolean checkErrorC1(Token Ident) { //Func
+        Symbol symbol = curSymbolTable.getSymbol(Ident.getVal());
+        if (!(symbol instanceof SymbolFunc)) {
+            Error error = new Error(Ident.getLineNum(), ErrorType.c);
+            ErrorTable.addError(error);
+            return true;
+        }
+        return false;
+    }
+
+    public void checkErrorC2(Token Ident) { // Var Con
+        Symbol symbol = curSymbolTable.getSymbol(Ident.getVal());
+        if (!(symbol instanceof SymbolVar) && !(symbol instanceof SymbolCon)) {
             Error error = new Error(Ident.getLineNum(), ErrorType.c);
             ErrorTable.addError(error);
         }
     }
 
-    public void checkErrorD(Token Ident, FuncRParams funcRParams) {
+    public boolean checkErrorD(Token Ident, FuncRParams funcRParams) {
         int cnt = 0;
         if (funcRParams != null) {
             cnt = funcRParams.getParamsNum();
@@ -187,22 +229,21 @@ public class ExpParser {
         if (cnt != symbolFunc.getParamsNum()) {
             Error error = new Error(Ident.getLineNum(), ErrorType.d);
             ErrorTable.addError(error);
+            return true;
         }
+        return false;
     }
 
     public void checkErrorE(Token Ident, FuncRParams funcRParams) {
+        if (funcRParams == null) { // 函数无参数，且参数数量相等则不出错
+            return;
+        }
         SymbolFunc symbolFunc = (SymbolFunc) curSymbolTable.getSymbol(Ident.getVal());
         ArrayList<SymbolVar> symbols = symbolFunc.getParams();
-        if (funcRParams == null) {
-            return; // correct or errorD
-        }
-        else if (funcRParams.getParamsNum() != symbolFunc.getParamsNum()) {
-            return; // errorD
-        }
         ArrayList<Exp> exps = funcRParams.getExps();
         for (int i = 0; i < exps.size(); i++) {
             if (symbols.get(i).getDimension() != exps.get(i).getDimension()) {
-                System.out.println("need" + symbols.get(i).getDimension() + "has" + exps.get(i).getDimension());
+                //System.out.println("need" + symbols.get(i).getDimension() + "has" + exps.get(i).getDimension());
                 Error error = new Error(Ident.getLineNum(), ErrorType.e);
                 ErrorTable.addError(error);
                 return; //TODO 如何统计实参维度
@@ -228,6 +269,15 @@ public class ExpParser {
             Error error = new Error(iterator.readLast().getLineNum(), ErrorType.k);
             ErrorTable.addError(error);
         }
+    }
+
+    public boolean isNextExp() {
+        LexType lexType = iterator.preRead(1).getLexType();
+        if (lexType == LexType.PLUS || lexType == LexType.MINU || lexType == LexType.NOT
+                || lexType == LexType.LPARENT || lexType == LexType.IDENFR || lexType == LexType.INTCON) {
+            return true;
+        }
+        return false;
     }
 
 }

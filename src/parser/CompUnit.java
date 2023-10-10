@@ -3,6 +3,8 @@ import error.ErrorTable;
 import error.ErrorType;
 import error.SymbolTable;
 import error.Error;
+import io.Output;
+import io.ParserOutput;
 import lexer.LexType;
 import lexer.Token;
 import lexer.LexerIterator;
@@ -36,7 +38,9 @@ public class CompUnit {
         parseDecls();
         parseFuncDefs();
         parseMainFuncDef();
-        System.out.println("<CompUnit>");
+        Output output = new Output("<CompUnit>");
+        ParserOutput.addOutput(output);
+        //System.out.println("<CompUnit>");
     }
 
     public void parseDecls() {
@@ -65,14 +69,28 @@ public class CompUnit {
         iterator.read(); // int
         iterator.read(); // main
         iterator.read(); // (
-        iterator.read(); // )
+        //iterator.read(); // )
+        checkErrorJ();
         BlockParser blockParser = new BlockParser(iterator, curSymbolTable);
         block = blockParser.parseBlock();
         Stmt stmt = block.getBlockItems().get(block.getBlockItems().size() - 1).getStmt();
         if (!(stmt instanceof StmtReturn)) {
             Error error = new Error(iterator.readLast().getLineNum(), ErrorType.g);
+            ErrorTable.addError(error);
         }
-        System.out.println("<MainFuncDef>");
+        Output output = new Output("<MainFuncDef>");
+        ParserOutput.addOutput(output);
+        //System.out.println("<MainFuncDef>");
+    }
+
+    public void checkErrorJ() {
+        if (iterator.preRead(1).getLexType() == LexType.RPARENT) {
+            iterator.read();
+        }
+        else {
+            Error error = new Error(iterator.readLast().getLineNum(), ErrorType.j);
+            ErrorTable.addError(error);
+        }
     }
 
 }
