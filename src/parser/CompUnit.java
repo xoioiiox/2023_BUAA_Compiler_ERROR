@@ -71,7 +71,7 @@ public class CompUnit {
         iterator.read(); // (
         //iterator.read(); // )
         checkErrorJ();
-        BlockParser blockParser = new BlockParser(iterator, curSymbolTable);
+        BlockParser blockParser = new BlockParser(iterator, curSymbolTable, 0);
         block = blockParser.parseBlock();
         Stmt stmt = block.getBlockItems().get(block.getBlockItems().size() - 1).getStmt();
         if (!(stmt instanceof StmtReturn)) {

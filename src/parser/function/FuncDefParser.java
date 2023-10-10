@@ -55,7 +55,7 @@ public class FuncDefParser {
         }
         //iterator.read(); // )
         checkErrorJ();
-        BlockParser blockParser = new BlockParser(iterator, curSymbolTable);
+        BlockParser blockParser = new BlockParser(iterator, curSymbolTable, 0);
         //Block block = blockParser.parseBlock(); //block 这里不再新建符号表
         ArrayList<BlockItem> blockItems = new ArrayList<>();
         iterator.read(); // {

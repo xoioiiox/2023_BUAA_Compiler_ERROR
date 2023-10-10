@@ -12,10 +12,12 @@ import java.util.ArrayList;
 public class BlockParser {
     private LexerIterator iterator;
     private SymbolTable curSymbolTable;
+    private int inFor;
 
-    public BlockParser(LexerIterator iterator, SymbolTable curSymbolTable) {
+    public BlockParser(LexerIterator iterator, SymbolTable curSymbolTable, int inFor) {
         this.iterator = iterator;
         this.curSymbolTable = curSymbolTable;
+        this.inFor = inFor;
     }
 
     public Block parseBlock() {
@@ -41,7 +43,7 @@ public class BlockParser {
             blockItem = new BlockItem(declParser.parseDecl());
         }
         else {
-            StmtParser stmtParser = new StmtParser(iterator, curSymbolTable, checkVoidReturn);
+            StmtParser stmtParser = new StmtParser(iterator, curSymbolTable, checkVoidReturn, inFor);
             blockItem = new BlockItem(stmtParser.parseStmt());
         }
         return blockItem;

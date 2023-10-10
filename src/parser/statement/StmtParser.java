@@ -17,10 +17,10 @@ public class StmtParser {
     private int inFor;
     private boolean checkVoidReturn;
 
-    public StmtParser(LexerIterator iterator, SymbolTable curSymbolTable, boolean checkVoidReturn) {
+    public StmtParser(LexerIterator iterator, SymbolTable curSymbolTable, boolean checkVoidReturn, int inFor) {
         this.iterator = iterator;
         this.curSymbolTable = curSymbolTable;
-        this.inFor = 0;
+        this.inFor = inFor;
         this.checkVoidReturn = checkVoidReturn;
     }
 
@@ -46,7 +46,7 @@ public class StmtParser {
             stmt = parseStmtPrintf();
         }
         else if (iterator.preRead(1).getLexType() == LexType.LBRACE) { //block
-            BlockParser blockParser = new BlockParser(iterator, curSymbolTable);
+            BlockParser blockParser = new BlockParser(iterator, curSymbolTable, inFor);
             stmt = blockParser.parseBlock();
         }
         else if (iterator.preRead(1).getLexType() == LexType.SEMICN) {
