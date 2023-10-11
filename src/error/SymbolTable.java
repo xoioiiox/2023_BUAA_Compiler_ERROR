@@ -4,10 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SymbolTable {
-    private Map<String, Symbol> symbolMap = new HashMap<>();
-    SymbolTable prevSymbolTable;
+    private Map<String, Symbol> symbolMap;
+    private SymbolTable prevSymbolTable;
 
     public SymbolTable(SymbolTable prevSymbolTable) {
+        this.symbolMap = new HashMap<>();
         this.prevSymbolTable = prevSymbolTable;
     }
 
@@ -17,10 +18,6 @@ public class SymbolTable {
 
     public boolean checkReName(String name) {
         return symbolMap.containsKey(name);
-    }
-
-    public SymbolTable getPrevSymbolTable() {
-        return prevSymbolTable;
     }
 
     public Symbol getSymbol(String name) {

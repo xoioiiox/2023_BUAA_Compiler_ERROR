@@ -97,60 +97,13 @@ public class Lexer {
                 break;
             }
             else if (c == '"') {
-                int f = 0;
                 content.append(c);
                 c = getAChar();
                 while (c != '"' && c != 0) { //按理不会读到0
-                    if (f == 1) { // \n
-                        f = 0;
-                        if (c == 'n') {
-                            content.append(c); //TODO
-                        }
-                        else {
-                            Error error = new Error(lineNum, ErrorType.a);
-                            ErrorTable.addError(error);
-                        }
-                    }
-                    else if (f == 2) { // %d
-                        f = 0;
-                        if (c == 'd') {
-                            content.append(c);
-                        }
-                        else {
-                            Error error = new Error(lineNum, ErrorType.a);
-                            ErrorTable.addError(error);
-                        }
-                    }
-                    else {
-                        if (c == 32 || c == 33 || c == 37 || (40 <= c && c <= 126)) {
-                            if (c == 92) {
-                                f = 1;
-                            }
-                            else if (c == 37) {
-                                f = 2;
-                            }
-                            content.append(c);
-                        }
-                        else {
-                            Error error = new Error(lineNum, ErrorType.a);
-                            ErrorTable.addError(error);
-                        }
-                    }
+                    content.append(c);
                     c = getAChar();
-                    if (c == '"') {
-                        char c1 = getAChar();
-                        if (c1 != ',' && c1 != ')' && c1 != ';') {
-                            Error error = new Error(lineNum, ErrorType.a);
-                            ErrorTable.addError(error);
-                            c = c1;
-                        }
-                        else {
-                            retract();
-                        }
-                    }
                 }
                 content.append(c);
-                //System.out.println(content);
                 content1 = new String(content);
                 token = new Token(LexType.STRCON, content1, lineNum);
                 break;
@@ -346,8 +299,10 @@ public class Lexer {
             curPos--;
         }
         else {
-            lineNum--;
-            curPos = lines.get(lineNum).length();
+            if (lineNum > 0) {
+                lineNum--;
+                curPos = lines.get(lineNum).length();
+            }
         }
     }
 

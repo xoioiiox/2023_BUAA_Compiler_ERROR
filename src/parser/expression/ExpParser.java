@@ -30,7 +30,6 @@ public class ExpParser {
         if (printOrNot) {
             Output output = new Output("<Exp>");
             ParserOutput.addOutput(output);
-            //System.out.println("<Exp>");
         }
         return exp;
     }
@@ -44,7 +43,6 @@ public class ExpParser {
             if (printOrNot) {
                 Output output = new Output("<AddExp>");
                 ParserOutput.addOutput(output);
-                //System.out.println("<AddExp>");
             }
             signs.add(iterator.read());
             mulExps.add(parseMulExp());
@@ -52,7 +50,6 @@ public class ExpParser {
         if (printOrNot) {
             Output output = new Output("<AddExp>");
             ParserOutput.addOutput(output);
-            //System.out.println("<AddExp>");
         }
         return new AddExp(signs, mulExps);
     }
@@ -67,7 +64,6 @@ public class ExpParser {
             if (printOrNot) {
                 Output output = new Output("<MulExp>");
                 ParserOutput.addOutput(output);
-                //System.out.println("<MulExp>");
             }
             signs.add(iterator.read());
             unaryExps.add(parseUnaryExp());
@@ -75,13 +71,12 @@ public class ExpParser {
         if (printOrNot) {
             Output output = new Output("<MulExp>");
             ParserOutput.addOutput(output);
-            //System.out.println("<MulExp>");
         }
         return new MulExp(signs, unaryExps);
     }
 
     public UnaryExp parseUnaryExp() {
-        UnaryExp unaryExp;
+        UnaryExp unaryExp = null;
         if (iterator.preRead(1).getLexType() == LexType.IDENFR
                 && iterator.preRead(2).getLexType() == LexType.LPARENT) {
             FuncRParams funcRParams = null;
@@ -113,18 +108,16 @@ public class ExpParser {
             if (printOrNot) {
                 Output output = new Output("<UnaryOp>");
                 ParserOutput.addOutput(output);
-                //System.out.println("<UnaryOp>");
             }
             unaryExp = new UnaryExp(unaryOp, parseUnaryExp(), curSymbolTable);
         }
-        else {
+        else if (isNextPrimaryExp()) {
             PrimaryExp primaryExp = parsePrimaryExp();
             unaryExp = new UnaryExp(primaryExp, curSymbolTable);
         }
         if (printOrNot) {
             Output output = new Output("<UnaryExp>");
             ParserOutput.addOutput(output);
-            //System.out.println("<UnaryExp>");
         }
         return unaryExp;
     }
@@ -139,38 +132,34 @@ public class ExpParser {
         if (printOrNot) {
             Output output = new Output("<FuncRParams>");
             ParserOutput.addOutput(output);
-            //System.out.println("<FuncRParams>");
         }
         return new FuncRParams(exps);
     }
 
     public PrimaryExp parsePrimaryExp() {
-        PrimaryExp primaryExp;
+        PrimaryExp primaryExp = null;
         if (iterator.preRead(1).getLexType() == LexType.LPARENT) {
             iterator.read(); // (
             Exp exp = parseExp();
-            //iterator.read(); // )
-            checkErrorJ();
+            iterator.read(); // ) 不会缺失
             primaryExp = new PrimaryExp(exp);
         }
         else if (iterator.preRead(1).getLexType() == LexType.IDENFR) {
             LVal lVal = parseLVal();
             primaryExp = new PrimaryExp(lVal);
         }
-        else {
+        else if (iterator.preRead(1).getLexType() == LexType.INTCON) {
             Token intConst = iterator.read();
             Number number = new Number(intConst);
             if (printOrNot) {
                 Output output = new Output("<Number>");
                 ParserOutput.addOutput(output);
-                //System.out.println("<Number>");
             }
             primaryExp = new PrimaryExp(number);
         }
         if (printOrNot) {
             Output output = new Output("<PrimaryExp>");
             ParserOutput.addOutput(output);
-            //System.out.println("<PrimaryExp>");
         }
         return primaryExp;
     }
@@ -189,7 +178,6 @@ public class ExpParser {
         if (printOrNot) {
             Output output = new Output("<LVal>");
             ParserOutput.addOutput(output);
-            //System.out.println("<LVal>");
         }
         return new LVal(Ident, exps, curSymbolTable);
     }
@@ -198,7 +186,6 @@ public class ExpParser {
         AddExp addExp = parseAddExp();
         Output output = new Output("<ConstExp>");
         ParserOutput.addOutput(output);
-        //System.out.println("<ConstExp>");
         return new ConstExp(addExp);
     }
 
@@ -275,6 +262,14 @@ public class ExpParser {
         LexType lexType = iterator.preRead(1).getLexType();
         if (lexType == LexType.PLUS || lexType == LexType.MINU || lexType == LexType.NOT
                 || lexType == LexType.LPARENT || lexType == LexType.IDENFR || lexType == LexType.INTCON) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isNextPrimaryExp() {
+        LexType lexType = iterator.preRead(1).getLexType();
+        if (lexType == LexType.LPARENT || lexType == LexType.IDENFR || lexType == LexType.INTCON) {
             return true;
         }
         return false;

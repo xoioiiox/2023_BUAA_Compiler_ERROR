@@ -40,7 +40,6 @@ public class CompUnit {
         parseMainFuncDef();
         Output output = new Output("<CompUnit>");
         ParserOutput.addOutput(output);
-        //System.out.println("<CompUnit>");
     }
 
     public void parseDecls() {
@@ -73,14 +72,19 @@ public class CompUnit {
         checkErrorJ();
         BlockParser blockParser = new BlockParser(iterator, curSymbolTable, 0);
         block = blockParser.parseBlock();
-        Stmt stmt = block.getBlockItems().get(block.getBlockItems().size() - 1).getStmt();
-        if (!(stmt instanceof StmtReturn)) {
+        if (block.getBlockItems().size() == 0) {
             Error error = new Error(iterator.readLast().getLineNum(), ErrorType.g);
             ErrorTable.addError(error);
         }
+        else {
+            Stmt stmt = block.getBlockItems().get(block.getBlockItems().size() - 1).getStmt();
+            if (!(stmt instanceof StmtReturn)) {
+                Error error = new Error(iterator.readLast().getLineNum(), ErrorType.g);
+                ErrorTable.addError(error);
+            }
+        }
         Output output = new Output("<MainFuncDef>");
         ParserOutput.addOutput(output);
-        //System.out.println("<MainFuncDef>");
     }
 
     public void checkErrorJ() {

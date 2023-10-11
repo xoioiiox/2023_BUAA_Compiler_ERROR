@@ -14,8 +14,9 @@ public class FuncType {
         if (type.getLexType() == LexType.VOIDTK) {
             return -1;
         }
-        else {
+        else if (type.getLexType() == LexType.INTTK) {
             return 0;
         }
+        return -2; //ERROR
     }
 }

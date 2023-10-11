@@ -31,7 +31,6 @@ public class BlockParser {
         iterator.read(); // }
         Output output = new Output("<Block>");
         ParserOutput.addOutput(output);
-        //System.out.println("<Block>");
         return new Block(blockItems);
     }
 

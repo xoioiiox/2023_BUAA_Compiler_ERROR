@@ -1,9 +1,9 @@
 package parser.expression;
 
 public class PrimaryExp {
-    Exp exp;
-    LVal lVal;
-    Number number;
+    private Exp exp;
+    private LVal lVal;
+    private Number number;
 
     public PrimaryExp(Exp exp) {
         this.exp = exp;

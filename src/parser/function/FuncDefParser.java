@@ -29,7 +29,6 @@ public class FuncDefParser {
         boolean checkVoidReturn = funcType.getFuncType() == -1;
         Output output = new Output("<FuncType>");
         ParserOutput.addOutput(output);
-        //System.out.println("<FuncType>");
         Token Ident = iterator.read();
         /*（若未重定义）新建函数符号，并加入原符号表*/
         SymbolFunc symbolFunc = new SymbolFunc(Ident.getVal(), Ident.getLineNum(), funcType.getFuncType());
@@ -51,7 +50,6 @@ public class FuncDefParser {
             }
             Output output1 = new Output("<FuncFParams>");
             ParserOutput.addOutput(output1);
-            //System.out.println("<FuncFParams>");
         }
         //iterator.read(); // )
         checkErrorJ();
@@ -65,19 +63,23 @@ public class FuncDefParser {
         iterator.read(); // }
         Output output2 = new Output("<Block>");
         ParserOutput.addOutput(output2);
-        //System.out.println("<Block>");
         Block block = new Block(blockItems);
         /*检查return语句是否与函数类型匹配*/
         if (funcType.getFuncType() == 0) { //int
-            Stmt stmt = block.getBlockItems().get(block.getBlockItems().size() - 1).getStmt();
-            if (!(stmt instanceof StmtReturn)) { // 无需考虑数据流？
+            if (block.getBlockItems().size() == 0) {
                 Error error = new Error(iterator.readLast().getLineNum(), ErrorType.g);
                 ErrorTable.addError(error);
+            }
+            else {
+                Stmt stmt = block.getBlockItems().get(block.getBlockItems().size() - 1).getStmt();
+                if (!(stmt instanceof StmtReturn)) { // 无需考虑数据流？ todo
+                    Error error = new Error(iterator.readLast().getLineNum(), ErrorType.g);
+                    ErrorTable.addError(error);
+                }
             }
         }
         Output output3 = new Output("<FuncDef>");
         ParserOutput.addOutput(output3);
-        //System.out.println("<FuncDef>");
         return new FuncDef(funcType, Ident, funcFParams, block);
     }
 
@@ -90,8 +92,7 @@ public class FuncDefParser {
         while (iterator.preRead(1).getLexType() == LexType.LBRACK) {
             cnt++;
             iterator.read(); // [
-            if (iterator.preRead(1).getLexType() != LexType.RBRACK
-                    && iterator.preRead(1).getLexType() != LexType.LBRACK) { //考虑右框缺失
+            if (isNextConstExp()) { //考虑右框缺失
                 ExpParser expParser = new ExpParser(iterator, curSymbolTable);
                 constExp = expParser.parseConstExp(); //parseConstExp
             }
@@ -109,7 +110,6 @@ public class FuncDefParser {
         }
         Output output = new Output("<FuncFParam>");
         ParserOutput.addOutput(output);
-        //System.out.println("<FuncFParam>");
         return new FuncFParam(btype, Ident, constExp);
     }
 
@@ -131,5 +131,14 @@ public class FuncDefParser {
             Error error = new Error(iterator.readLast().getLineNum(), ErrorType.k);
             ErrorTable.addError(error);
         }
+    }
+
+    public boolean isNextConstExp() {
+        LexType lexType = iterator.preRead(1).getLexType();
+        if (lexType == LexType.PLUS || lexType == LexType.MINU || lexType == LexType.NOT
+                || lexType == LexType.LPARENT || lexType == LexType.IDENFR || lexType == LexType.INTCON) {
+            return true;
+        }
+        return false;
     }
 }

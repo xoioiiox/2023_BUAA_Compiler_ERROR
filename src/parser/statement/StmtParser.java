@@ -26,7 +26,7 @@ public class StmtParser {
 
 
     public Stmt parseStmt() {
-        Stmt stmt;
+        Stmt stmt = null;
         if (iterator.preRead(1).getLexType() == LexType.IFTK) {
             stmt = parseStmtIf();
         }
@@ -94,12 +94,15 @@ public class StmtParser {
                 stmt = new StmtExp(exp);
             }
         }
-        else {
+        else if (isNextExp()) {
             ExpParser expParser = new ExpParser(iterator, curSymbolTable);
             Exp exp = expParser.parseExp();
             //iterator.read(); // ;
             checkErrorI();
             stmt = new StmtExp(exp);
+        }
+        else {
+            checkErrorI();
         }
         Output output = new Output("<Stmt>");
         ParserOutput.addOutput(output);
@@ -160,7 +163,6 @@ public class StmtParser {
         Exp exp = expParser.parseExp();
         Output output = new Output("<ForStmt>");
         ParserOutput.addOutput(output);
-        //System.out.println("<ForStmt>");
         return new ForStmt(lVal, exp);
     }
 
@@ -208,6 +210,7 @@ public class StmtParser {
         Token token = iterator.read(); // printf
         iterator.read(); // (
         Token formatString = iterator.read(); // formatString
+        checkErrorA(token, formatString);
         int num = countFormat(formatString);
         int cnt = 0;
         while (iterator.preRead(1).getLexType() == LexType.COMMA) {
@@ -235,6 +238,36 @@ public class StmtParser {
             }
         }
         return cnt;
+    }
+
+    private void checkErrorA(Token printf, Token formatString) {
+        String s = formatString.getVal();
+        int len = s.length();
+        boolean isCorrect = true;
+        for (int i = 1; i < len - 1; i++) {
+            char c = s.charAt(i);
+            if (c != 32 && c != 33 && !(c >= 40 && c <= 126)) {
+                if (c == '%') {
+                    if (i < len - 2 && s.charAt(i + 1) == 'd') {
+                        continue;
+                    }
+                    else {
+                        isCorrect = false;
+                        break;
+                    }
+                }
+                isCorrect = false;
+                break;
+            }
+            if (c == 92 && (i >= len - 2 || s.charAt(i + 1) != 'n')) {
+                isCorrect = false;
+                break;
+            }
+        }
+        if (!isCorrect) {
+            Error error = new Error(printf.getLineNum(), ErrorType.a);
+            ErrorTable.addError(error);
+        }
     }
 
     public void checkErrorH(LVal lVal) {

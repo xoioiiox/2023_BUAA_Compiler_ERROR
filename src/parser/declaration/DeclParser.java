@@ -24,11 +24,11 @@ public class DeclParser {
     }
 
     public Decl parseDecl () {
-        Decl decl;
+        Decl decl = null;
         if (iterator.preRead(1).getLexType() == LexType.CONSTTK) {
             decl = parseConstDecl();
         }
-        else {
+        else if (iterator.preRead(1).getLexType() == LexType.INTTK) {
             decl = parseVarDecl();
         }
         return decl;
@@ -60,7 +60,7 @@ public class DeclParser {
         while (iterator.preRead(1).getLexType() == LexType.LBRACK) {
             cnt++;
             iterator.read(); // [
-            expParser.parseConstExp();
+            constExps.add(expParser.parseConstExp());
             //iterator.read(); // ]
             checkErrorK();
         }

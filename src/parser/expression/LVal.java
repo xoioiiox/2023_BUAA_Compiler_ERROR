@@ -25,7 +25,7 @@ public class LVal {
 
     public int getDimension() {
         Symbol symbol = curSymbolTable.getSymbol(Ident.getVal());
-        if (!(symbol instanceof SymbolVar) && !(symbol instanceof SymbolCon) ) {
+        if (!(symbol instanceof SymbolVar) && !(symbol instanceof SymbolCon)) {
             return -2; //未定义
         }
         int dim1, dim2; //dim1为原定义维度
